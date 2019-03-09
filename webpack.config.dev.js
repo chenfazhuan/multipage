@@ -5,15 +5,9 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const pageConfig = require('./page.config.js');
-const px2remLoader = {
-  loader: 'px2rem-loader',
-  options: {
-    remUnit: 75  //1rem=多少像素 这里的设计稿是750px。
-  }
-}
 
 let webpackConfig = {
-  mode: 'none',
+  mode: 'development',
   // 配置入口
   entry: {},
   // 配置出口
@@ -85,23 +79,11 @@ let webpackConfig = {
         use: [
           'style-loader',
           'css-loader',
-          px2remLoader,
           'less-loader',
         ],
       },
     ]
   },
-  plugins:[
-    //设置每一次build之前先删除dist
-    new CleanWebpackPlugin(
-      ['dist/*',],　     //匹配删除的文件
-      {
-          root: __dirname,   //根目录
-          verbose: true,    //开启在控制台输出信息
-          dry: false     //启用删除文件
-      }
-    )
-  ],
   // 起本地服务
   devServer: {
     open: true,
@@ -112,6 +94,7 @@ let webpackConfig = {
     hot: true,
     host: 'localhost',
     port: 8088,
+    watchContentBase: true,
     proxy: {
       "/api": 'https://www.easy-mock.com/mock/5b7e1da647bd8a6c422b9bd4',
     },
@@ -125,14 +108,13 @@ if(pageConfig && Array.isArray(pageConfig)){
       filename: path.join(__dirname,`/dist/${page.name}.html`),
       template: path.join(__dirname,`/${page.html}`),
       inject: true,
+      hash: true,
       chunks: [page.name],
       inlineSource: '.(js|css)$',
       minify: {
         removeComments: true,
         collapseWhitespace: true,
         removeAttributeQuotes: true
-        // more options:
-        // https://github.com/kangax/html-minifier#options-quick-reference
       },
       chunksSortMode: 'dependency'
     }))

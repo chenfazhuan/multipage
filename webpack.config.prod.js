@@ -6,6 +6,7 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const pageConfig = require('./page.config.js');
+const optimizeCss = require('optimize-css-assets-webpack-plugin');// 压缩css
 
 class ChunksFromEntryPlugin {
   apply (compiler) {
@@ -35,12 +36,11 @@ let webpackConfig = {
   mode: 'production',
   // 配置入口
   entry: {},
-  devtool: "source-map",
   // 配置出口
   output: {
     path: path.join(__dirname, "./dist/"),
     filename: 'static/js/[name].[hash:7].js',
-    publicPath: '/',
+    publicPath: './',
   },
   module: {
     rules: [
@@ -128,6 +128,7 @@ let webpackConfig = {
       }
     ),
     new ChunksFromEntryPlugin(),
+    new optimizeCss()//执行压缩抽离出来的css
   ],
   optimization:{
     splitChunks: {
@@ -143,11 +144,11 @@ let webpackConfig = {
               test: /[\\/]node_modules[\\/]/,
               priority: -10
           },
-          // default: {
-          //     minChunks: 2,
-          //     priority: -20,
-          //     reuseExistingChunk: true
-          // },
+          default: {
+              minChunks: 2,
+              priority: -20,
+              reuseExistingChunk: true
+          },
           commons: {
             name: "commons",
             chunks: "initial",
@@ -173,8 +174,6 @@ if(pageConfig && Array.isArray(pageConfig)){
         removeComments: true,
         collapseWhitespace: true,
         removeAttributeQuotes: true
-        // more options:
-        // https://github.com/kangax/html-minifier#options-quick-reference
       },
       chunksSortMode: 'dependency'
     }))
